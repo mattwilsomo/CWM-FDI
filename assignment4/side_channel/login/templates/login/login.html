@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head><title>Login</title>
+<style>
+  body { font-family: monospace; max-width: 480px; margin: 60px auto; }
+  .result { margin-top: 16px; padding: 12px; border: 1px solid #ccc; }
+  .error  { color: #c00; }
+  .ok     { color: #080; }
+  .time   { font-size: 1.4em; font-weight: bold; }
+</style>
+</head>
+<body>
+  <h2>Login</h2>
+
+  {% if success %}
+    <div class="result ok">
+      <p>Access granted. Flag: <strong>CWM{t1m1ng_1s_3v3ryth1ng}</strong></p>
+      <p>Check took: <span class="time">{{ elapsed_ms }} ms</span></p>
+    </div>
+  {% elif elapsed_ms %}
+    <div class="result error">
+      <p>Invalid credentials for guess: <strong>{{ guess }}</strong></p>
+      <p>Check took: <span class="time">{{ elapsed_ms }} ms</span></p>
+    </div>
+  {% endif %}
+
+  <form method="post" style="margin-top:24px">
+    {% csrf_token %}
+    <label>Username<br><input type="text" name="username" value="admin"></label><br><br>
+    <label>Password<br><input type="text" name="password" autocomplete="off"></label><br><br>
+    <button type="submit">Try</button>
+  </form>
+</body>
+</html>
