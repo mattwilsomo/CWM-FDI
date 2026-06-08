@@ -36,6 +36,21 @@ def matmul_slow(a: Matrix, b: Matrix, c: Matrix, n: int) -> None:
             c[i][j] = total
 
 
+def matmul_transpose(a: Matrix, b: Matrix, c: Matrix, n: int) -> None:
+	bt = [[0 for _ in range( n)] for _ in range(n)]
+	# transposes matrix b and saves it to matrix bt
+	for i in range(n):
+		for  j in range(n):
+			bt[i][j] = bt[j][i]
+	#print(b[:3][:3], "\n", bt[:3][:3])
+	for i in range(n):
+		for j in range(n):
+			total = 0.0
+			for k in range(n):
+				total += a[i][k] * b[j][k]
+			c[i][j] = total 
+
+
 def checksum(m: Matrix, n: int) -> float:
     total = 0.0
     step = (n // 16) + 1
@@ -80,7 +95,7 @@ def main(argv: list[str]) -> int:
     c = zero_matrix(n)
 
     for _ in range(reps):
-        matmul_slow(a, b, c, n)
+        matmul_transpose(a, b, c, n)
 
     print(f"n={n} reps={reps} checksum={checksum(c, n):.6f}")
     return 0
@@ -88,3 +103,4 @@ def main(argv: list[str]) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv))
+
