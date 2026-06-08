@@ -4,12 +4,12 @@ import matplotlib.pyplot as plt
 
 
 # parameters to modify 
-filename="my_input.txt"
-label='label'
+filename="../assignment2/my_input.txt"
+label='python'
 xlabel = 'xlabel'
 ylabel = 'ylabel'
-title='Simple plot'
-fig_name='my_graph.png'
+title='The difference in adjacent cpu clock calls'
+fig_name='assignment2_question2.png'
 bins=100 #adjust the number of bins to your plot
 
 ## load data from input file

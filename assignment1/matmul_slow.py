@@ -95,7 +95,7 @@ def main(argv: list[str]) -> int:
     c = zero_matrix(n)
 
     for _ in range(reps):
-        matmul_transpose(a, b, c, n)
+        matmul_slow(a, b, c, n)
 
     print(f"n={n} reps={reps} checksum={checksum(c, n):.6f}")
     return 0

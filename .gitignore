@@ -290,3 +290,5 @@ Testing/
 
 # Django
 *.sqlite3
+perf.data
+**/perf.data
