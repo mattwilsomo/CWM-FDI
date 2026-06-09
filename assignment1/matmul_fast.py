@@ -8,6 +8,7 @@ so the computation has an observable result.
 
 import sys
 from typing import List
+import time
 
 Matrix = List[List[float]]
 
@@ -26,6 +27,7 @@ def zero_matrix(n: int) -> Matrix:
 
 #Reorder loops to improve locality
 def matmul_fast1(a: Matrix, b: Matrix, c: Matrix, n: int) -> None:
+    start = time.time()	
     for i in range(n):
         row_ai = a[i]
         row_ci = c[i]
@@ -34,9 +36,12 @@ def matmul_fast1(a: Matrix, b: Matrix, c: Matrix, n: int) -> None:
             for k in range(n):
                 total += row_ai[k] * b[k][j]
             row_ci[j] = total
+    end = time.time()
+    print(f"the time elapsed for matmul_fast1 is: ", {end - start})
 
 #Reorder loops to reduce inner loops
 def matmul_fast2(a: Matrix, b: Matrix, c: Matrix, n: int) -> None:
+    start = time.time()
     for i in range(n):
         row_ai = a[i]
         row_ci = c[i]
@@ -47,6 +52,9 @@ def matmul_fast2(a: Matrix, b: Matrix, c: Matrix, n: int) -> None:
             row_bk = b[k]
             for j in range(n):
               row_ci[j] += aik * row_bk[j]
+    end = time.time()
+    print(f"the time elapsed for matmul_fast2 is: ", {end - start})
+
 
 def transpose(m: Matrix) -> Matrix:
     n = len(m)
@@ -54,6 +62,7 @@ def transpose(m: Matrix) -> Matrix:
 
 #Matrix transpose method
 def matmul_fast3(a: Matrix, b: Matrix, c: Matrix, n: int) -> None:
+    start = time.time()
     bt = transpose(b)
 
     for i in range(n):
@@ -65,7 +74,8 @@ def matmul_fast3(a: Matrix, b: Matrix, c: Matrix, n: int) -> None:
             for k in range(n):
                 total += row_ai[k] * row_btj[k]
             row_ci[j] = total
-
+    end = time.time()
+    print(f"The time elapsed for matmul_fast3 is: ", {end - start})
 
 def checksum(m: Matrix, n: int) -> float:
     total = 0.0
