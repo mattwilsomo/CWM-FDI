@@ -1,19 +1,29 @@
 # !/usr/bin/python3
 import numpy as np
 import matplotlib.pyplot as plt
-
+import re
 
 # parameters to modify 
-filename="time_c.txt"
-label='C Code'
-xlabel = 'Number of reads'
-ylabel = 'Cumulative time'
-title='The difference in adjacent cpu clock calls'
+filename="ping_slow.log"
+label='Ping times'
+xlabel = 'Number of measurements'
+ylabel = 'CUmulative time'
+title='CDF of ping times'
 fig_name='assignment2_question2.png'
 bins=100 #adjust the number of bins to your plot
 
 ## load data from input file
-t = np.loadtxt(filename, delimiter=" ", dtype="float")
+if re.search(r"^ping.*\.log$", filename): 
+	times = []
+	with open(filename, "r") as f:
+		for line in f:
+			m = re.search(r"time=([0-9.]+)", line)
+			if m:
+				times.append(float(m.group(1)))
+	t = np.array(times)
+
+else: 	
+	t = np.loadtxt(filename, delimiter=" ", dtype="float")
 
 ## if your data is "X Y" (2 cols), use the following line
 #plt.plot(t[:,0], t[:,1], label=label)  # Plot some data on the (implicit) axes.
