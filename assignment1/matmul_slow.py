@@ -29,16 +29,17 @@ def zero_matrix(n: int) -> Matrix:
 # Intentionally simple O(n^3) matrix multiplication.
 # This loop order is correct but cache-unfriendly for matrix B.
 def matmul_slow(a: Matrix, b: Matrix, c: Matrix, n: int) -> None:
-    start_func = time.time()
+	start_func = time.time()
 	for i in range(n):
-        	for j in range(n):
-		    start_elem = time.time()
-	            total = 0.0
-	            for k in range(n):
-	                total += a[i][k] * b[k][j]
-	            c[i][j] = total
-		    end_elem = time.time()
-		    elapsed_elem = end_elem - start_elem
+		for j in range(n):
+			start_elem = time.time()
+			total = 0.0
+			for k in range(n):
+				total += a[i][k] * b[k][j]
+
+			c[i][j] = total
+			end_elem = time.time()
+			elapsed_elem = end_elem - start_elem
 	end_func = time.time()
 	elapsed_func = end_func - start_func
 
