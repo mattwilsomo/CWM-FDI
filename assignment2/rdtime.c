@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <x86intrin.h>
+#include <time.h>
 
 /*
  * Read the CPU Time Stamp Counter (TSC).
@@ -14,9 +15,9 @@
  *     Current TSC value in CPU cycles.
  */
 static inline uint64_t read_tsc(void) {
-    _mm_lfence();
+   // _mm_lfence();
     uint64_t t = __rdtsc();
-    _mm_lfence();
+    //_mm_lfence();
     return t;
 }
 
@@ -152,6 +153,11 @@ uint64_t min_consecutive_diff(size_t num, const char *filename) {
      */
     for (size_t i = 0; i < num; i++) {
         timestamps[i] = read_tsc();
+	
+	//clock_t start_time = clock();
+	
+	//while (clock() < start_time + 10);
+
     }
 
     /*
