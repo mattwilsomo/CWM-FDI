@@ -3,6 +3,7 @@ from sklearn.ensemble import LogisticRegression
 from sklearn import tree
 from sklearn import RandomForestClassifier
 from sklearn import svm
+from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler 
 from sklearn.pipeline import make_pipeline
@@ -94,6 +95,31 @@ def SupportVectorMachine(filepath: str = "../data/creditcard.csv"):
 		StandardScaler(),
 		svm.LinearSVC(class_weight = "balanced", random_state = 42, max_iter = 5000)
 	)
+
+        #trains the model on the data
+        model = pipe.fit(X_train, y_train)
+
+
+        end_train = time.time()
+        train_time = end_train - start_train 
+
+
+        return (model, train_time, X_test, y_test)
+
+def MLP(filepath: str = "../data/creditcard.csv"):
+
+        # Will train a MLP Neural network model on the data 
+
+        X_train, X_test, y_train, y_test = split(filepath)
+
+        start_train = time.time()
+
+        #Creates pipeline
+        #caps the iterations to avoid overfitting
+        pipe = make_pipeline(
+                StandardScaler(),
+                MLPClassifier(random_state = 42, max_iter = 500)
+        )
 
         #trains the model on the data
         model = pipe.fit(X_train, y_train)
