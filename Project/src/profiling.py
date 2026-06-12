@@ -48,11 +48,13 @@ class Model:
             self.model,
             self.X_test,
             self.y_test,
+            self.modeltype,
         )
+        self.train_energy, self.inference_energy = modelling.get_energy_metrics(self.modeltype)
 
 
 if __name__ == "__main__":
-    m = Model("lr", "../data/creditcard.csv")
+    m = Model("mlp", "../data/creditcard.csv")
     m.train()
 
     print("Model:", m.model)
@@ -64,3 +66,6 @@ if __name__ == "__main__":
 
     print("AP score:", m.ap_score)
     print("Inference time:", m.inference_time)
+    print("Train energy: ", m.train_energy)
+    print("Inference enegy: ", m.inference_energy)
+

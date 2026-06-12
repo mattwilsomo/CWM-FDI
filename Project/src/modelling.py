@@ -173,3 +173,121 @@ def evaluate_model(model, X_test, y_test,modeltype):
     # Evaluate the trained model using average precision and inference time.
     ap_score, inference_time = get_inference_metrics(model, X_test, y_test)
     return ap_score, inference_time
+
+def get_energy_metrics(modeltype, filepath="../data/creditcard.csv"):
+    import subprocess
+    import tempfile
+    import textwrap
+    import re
+    from pathlib import Path
+    import joblib
+    import sys
+
+    model_map = {
+        "decision tree": "dt",
+        "dt": "dt",
+        "logistic regression": "lr",
+        "lr": "lr",
+        "random forest": "rf",
+        "rf": "rf",
+        "svm": "svm",
+        "mlp": "mlp",
+    }
+
+    model_key = model_map.get(modeltype.lower().strip())
+    if model_key is None:
+        raise ValueError(f"Unknown model type: {modeltype}")
+
+    def parse_pkg_j(output: str) -> float:
+        match = re.search(r"Pkg_J[^0-9]*([0-9]+(?:\.[0-9]+)?)", output)
+        if match:
+            return float(match.group(1))
+
+        nums = re.findall(r"[0-9]+(?:\.[0-9]+)?", output)
+        if not nums:
+            raise RuntimeError(f"Could not parse turbostat output:\n{output}")
+        return float(nums[-1])
+
+    def run_turbostat(py_script: Path, *args: str) -> float:
+        cmd = [
+            "sudo", "turbostat", "-q", "--Joules", "--show", "Pkg_J",
+            sys.executable, str(py_script), *args
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise RuntimeError(
+                f"turbostat failed:\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
+            )
+        return parse_pkg_j(result.stdout + "\n" + result.stderr)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        model_file = tmpdir / "model.joblib"
+
+        # 1) Train once normally so we have a fitted model available
+        if model_key == "dt":
+            model, train_time, X_test, y_test = DecisionTree(filepath)
+        elif model_key == "lr":
+            model, train_time, X_test, y_test = LogRegression(filepath)
+        elif model_key == "rf":
+            model, train_time, X_test, y_test = RandomForest(filepath)
+        elif model_key == "svm":
+            model, train_time, X_test, y_test = SupportVectorMachine(filepath)
+        elif model_key == "mlp":
+            model, train_time, X_test, y_test = MLP(filepath)
+
+        joblib.dump(model, model_file)
+
+        # 2) Measure training energy by rerunning the training function under turbostat
+        train_script = tmpdir / "measure_train.py"
+        train_script.write_text(textwrap.dedent(f"""
+            import sys
+            sys.path.insert(0, {repr(str(Path(__file__).resolve().parent))})
+            import modelling
+
+            filepath = sys.argv[1]
+            modeltype = sys.argv[2].lower().strip()
+
+            if modeltype in ("decision tree", "dt"):
+                modelling.DecisionTree(filepath)
+            elif modeltype in ("logistic regression", "lr"):
+                modelling.LogRegression(filepath)
+            elif modeltype in ("random forest", "rf"):
+                modelling.RandomForest(filepath)
+            elif modeltype == "svm":
+                modelling.SupportVectorMachine(filepath)
+            elif modeltype == "mlp":
+                modelling.MLP(filepath)
+            else:
+                raise ValueError("Unknown model type")
+        """))
+
+        training_energy = run_turbostat(train_script, filepath, modeltype)
+
+        # 3) Measure inference energy using the fitted model already saved
+        infer_script = tmpdir / "measure_infer.py"
+        infer_script.write_text(textwrap.dedent(f"""
+            import sys
+            import joblib
+            sys.path.insert(0, {repr(str(Path(__file__).resolve().parent))})
+            import modelling
+
+            filepath = sys.argv[1]
+            model_file = sys.argv[2]
+
+            model = joblib.load(model_file)
+            _, X_test, _, y_test = modelling.split(filepath)
+
+            if hasattr(model, "predict_proba"):
+                y_scores = model.predict_proba(X_test)
+                if getattr(y_scores, "ndim", 1) == 2:
+                    y_scores = y_scores[:, 1]
+            else:
+                y_scores = model.decision_function(X_test)
+
+            modelling.average_precision_score(y_test, y_scores)
+        """))
+
+        inference_energy = run_turbostat(infer_script, filepath, str(model_file))
+
+    return training_energy, inference_energy
